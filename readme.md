@@ -73,4 +73,4 @@ The Laravel framework is open-source software licensed under the [MIT license](h
 
 ## Link Download
 
-Click https://laravel.com to download.
+Click https://laravel.com to download
