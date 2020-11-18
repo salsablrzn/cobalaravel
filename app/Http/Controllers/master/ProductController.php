@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Master;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use App\Product;
 
 class ProductController extends Controller
 {
@@ -14,9 +19,18 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return "Ini Halaman Index";
+       //  $product=DB::table('product')->get();
+       // // dump($product);
+       //  return view("master/Product/index",['product'=>$product]);
+        if(!Session::get('login')){
+            return redirect('login');
+        }
+        else{
+        $product = product::all();
+        return view("master/Product/index",['product'=>$product]);
         //
     }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -25,7 +39,9 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return "Ini Halaman Create";
+        $category=DB::table('category')->get();
+        return view("master/Product/create",['category'=>$category]);
+        //
         //
     }
 
@@ -37,6 +53,18 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+         DB::table('category')->get();
+         Product::create([
+            'Product_ID'   => $request->productid,
+            'Category_ID'  => $request->categoriesid,
+            'Product_Name' => $request->productname,
+            'Product_Price'=> $request->productprice,
+            'Product_Stock'=> $request->productstock,
+            'Explanation'  => $request->explanation,
+            'Status'       => $request->status
+
+        ]);
+        return redirect('ProductIndex');
         //
     }
 
@@ -57,10 +85,19 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit()
+    public function edit($id)
     {
-        return "Ini Halaman Edit";
+       //  $product=DB::table('product')
+       // ->where('Product_ID', $id)
+       // ->first();
+       // $category=DB::table('category')->get();
+       //  //
+       // return view("master/Product/edit",['product'=>$product, 'category'=>$category ]);
         //
+        $category=DB::table('category')->get();
+        $product=product::where('Product_ID',$id)->get();
+        //
+       return view("master/Product/edit",['product'=>$product, 'Category'=>$category ]);
     }
 
     /**
@@ -70,9 +107,20 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
+         DB::table('category')->get();
+         Product::where('Product_ID',$request->productid)
+         ->update([
+            'Category_ID'  => $request->categoriesid,
+            'Product_Name' => $request->productname,
+            'Product_Price'=> $request->productprice,
+            'Product_Stock'=> $request->productstock,
+            'Explanation'  => $request->explanation,
+            'Status'       => $request->status
+            ]);  
         //
+            return redirect('ProductIndex');
     }
 
     /**
@@ -81,9 +129,12 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy()
+    public function destroy($id)
     {
-        return "Ini Halaman Destroy";
+         DB::table('product')
+            ->where('Product_ID', $id)
+            ->delete();     
+        return redirect('ProductIndex');
         //
     }
 }

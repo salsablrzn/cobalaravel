@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Transaksi;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class SalesDetailController extends Controller
 {
@@ -14,9 +18,16 @@ class SalesDetailController extends Controller
      */
     public function index()
     {
-        return "Ini Halaman Index";
+        if(!Session::get('login')){
+            return redirect('login');
+        }
+        else{
+        $salesdetail=DB::table('sales_detail')->get();
+       // dump($salesdetail);
+        return view("transaksi/SalesDetail/index",['sales_detail'=>$salesdetail]);
         //
     }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -25,7 +36,7 @@ class SalesDetailController extends Controller
      */
     public function create()
     {
-        return "Ini Halaman Create";
+        return view("transaksi/SalesDetail/create");
         //
     }
 
@@ -37,7 +48,16 @@ class SalesDetailController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        DB::table('salesdetail')->insert([
+            'Nota_ID'   => $request->notaid,
+            'Product_ID' => $request->productid,
+            'Quantity'  => $request->quantity,
+            'Selling_Price' => $request->sellingprice,
+            'Discount' => $request->discount,
+            'Total_price' => $request->totalprice,
+
+        ]);
+        return redirect('SalesIndex');
     }
 
     /**

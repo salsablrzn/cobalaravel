@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Transaksi;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use PDF;
 
 class SalesController extends Controller
 {
@@ -14,9 +19,16 @@ class SalesController extends Controller
      */
     public function index()
     {
-        return view ("Transaksi/index");
+        if(!Session::get('login')){
+            return redirect('login');
+        }
+        else{
+        $sales=DB::table('sales')->get();
+       // dump($user);
+        return view("transaksi/Sales/index",['sales'=>$sales]);
         //
     }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -25,7 +37,7 @@ class SalesController extends Controller
      */
     public function create()
     {
-        return view ("Transaksi/create");
+        return view("transaksi/Sales/create");
         //
     }
 
@@ -37,9 +49,16 @@ class SalesController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        DB::table('sales')->insert([
+            'Nota_ID'   => $request->notaid,
+            'Customer_ID' => $request->customerid,
+            'User_ID'  => $request->userid,
+            'Nota_Date' => $request->notadate,
+            'Total_Payment' => $request->totalpayment,
 
+        ]);
+        return redirect('SalesIndex');
+    }
     /**
      * Display the specified resource.
      *
@@ -57,9 +76,14 @@ class SalesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit()
+
+    public function edit($id)
     {
-        return view ("Transaksi/edit");
+        $user=DB::table('sales')
+       ->where('Nota_ID', $id)
+       ->first();
+        //
+       return view("transaksi/Sales/edit",['sales'=>$sales]);
         //
     }
 
@@ -70,8 +94,17 @@ class SalesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
+         DB::table('sales')
+            ->where('Nota_ID', $request->notaid)
+            ->update([ 
+            'Nota ID'   => $request->notaid,
+            'Customer ID' => $request->customerid,
+            'User ID'  => $request->userid,
+            'Nota Date' => $request->notadate,
+            'Total Payment' => $request->totalpayment,
+            ]);  
         //
     }
 
@@ -81,9 +114,25 @@ class SalesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy()
+    public function destroy($id)
     {
-        return view ("Transaksi/destroy");
+         DB::table('sales')
+            ->where('Nota_ID', $id)
+            ->delete();     
+        return redirect('SalesIndex');
         //
+    }
+
+    public function cetak_pdf($id)
+    {
+        $user=DB::table('user')->get();
+        $customer=DB::table('customer')->get();
+        $category=DB::table('category')->get();
+        $product=DB::table('product')->get();
+        $sales=DB::table('sales',$id)->get();
+        $salesdetail=DB::table('sales_detail')->get();
+        $notaid= $id;
+        $pdf=PDF::loadview('transaksi/Sales/invoice_pdf',['id'=>$notaid,'sales'=>$sales,'salesdetail'=>$salesdetail,'product'=>$product, 'user'=>$user,'customer'=>$customer],)->setPaper('a4');
+        return $pdf->stream('invoice-pdf');
     }
 }

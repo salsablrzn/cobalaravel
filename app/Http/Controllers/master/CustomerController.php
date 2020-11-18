@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Master;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -14,9 +18,16 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        return "Ini Halaman Index";
+        if(!Session::get('login')){
+            return redirect('login');
+        }
+        else{
+        $customer=DB::table('customer')->get();
+       // dump($customer);
+        return view("master/Customer/index",['customer'=>$customer]);
         //
     }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -25,7 +36,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        return "Ini Halaman Create";
+        return view("master/Customer/create");
         //
     }
 
@@ -37,6 +48,20 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+        DB::table('customer')->insert([
+            'Customer_ID'=> $request->customerid,
+            'First_Name' => $request->firstname,
+            'Last_Name'  => $request->lastname,
+            'Phone'      => $request->phone,
+            'Email'      => $request->email,
+            'Street'     => $request->street,
+            'City'       => $request->city,
+            'State'      => $request->state,
+            'Zip_Code'   => $request->zipcode,
+            'Status'     => $request->status
+
+        ]);
+        return redirect('CustomerIndex');
         //
     }
 
@@ -59,7 +84,11 @@ class CustomerController extends Controller
      */
     public function edit($id)
     {
-        return "Ini Halaman Edit";
+        $customer=DB::table('customer')
+       ->where('Customer_ID', $id)
+       ->first();
+        //
+       return view("master/Customer/edit",['customer'=>$customer]);
         //
     }
 
@@ -70,9 +99,25 @@ class CustomerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
+         DB::table('customer')
+            ->where('Customer_ID',$request->customerid)
+            ->update([
+            'Customer_ID'=> $request->customerid,
+            'First_Name' => $request->firstname,
+            'Last_Name'  => $request->lastname,
+            'Phone'      => $request->phone,
+            'Email'      => $request->email,
+            'Street'     => $request->street,
+            'City'       => $request->city,
+            'State'      => $request->state,
+            'Zip_Code'   => $request->zipcode,
+            'Status'     => $request->status
+
+            ]); 
         //
+            return redirect('CustomerIndex');
     }
 
     /**
@@ -83,6 +128,9 @@ class CustomerController extends Controller
      */
     public function destroy($id)
     {
-       return "Ini Halaman Destroy"; //
+        DB::table('customer')
+            ->where('Customer_ID', $id)
+            ->delete();     
+        return redirect('CustomerIndex');
     }
 }

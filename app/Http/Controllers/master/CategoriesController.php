@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Master;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class CategoriesController extends Controller
 {
@@ -14,9 +18,17 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-        return view ("master/index");
+        if(!Session::get('login')){
+            return redirect('login');
+        }
+        else{
+        $category=DB::table('category')->get();
+       // dump(category);
+        return view("master/Category/index",['category'=>$category]);
+       
         //
     }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -25,7 +37,7 @@ class CategoriesController extends Controller
      */
     public function create()
     {
-        return view ("master/create");
+        return view ("master/Category/create");
         //
     }
 
@@ -38,6 +50,13 @@ class CategoriesController extends Controller
     public function store(Request $request)
     {
         //
+        DB::table('category')->insert([
+            'Category_ID' => $request->categoriesid,
+            'Category_Name' => $request->categoriesname,
+            'Status' => $request->status
+
+        ]);
+        return redirect('CategoriesIndex');
     }
 
     /**
@@ -57,10 +76,13 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit()
+    public function edit($id)
     {
-        return view ("master/edit");
+       $category=DB::table('category')
+       ->where('Category_ID', $id)
+       ->first();
         //
+       return view("master/Category/edit",['category'=>$category]);
     }
 
     /**
@@ -70,9 +92,16 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
+        DB::table('category')
+            ->where('Category_ID', $request->categoriesid)
+            ->update([
+                'Category_Name' => $request->categoriesname,
+                'Status' => $request->status
+            ]);      
         //
+            return redirect('CategoriesIndex');
     }
 
     /**
@@ -81,9 +110,12 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy()
+    public function destroy($id)
     {
-        return view ("master/destroy");
+        DB::table('category')
+            ->where('Category_ID', $id)
+            ->delete();     
+        return redirect('CategoriesIndex');
         //
     }
 }
